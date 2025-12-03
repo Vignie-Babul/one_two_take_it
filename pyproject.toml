@@ -1,0 +1,8 @@
+[project]
+name = "one_two_take_it"
+version = "0.1.0"
+description = ""
+requires-python = ">=3.12"
+dependencies = [
+    "pygame>=2.6.1",
+]
