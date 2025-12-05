@@ -1,6 +1,6 @@
-from src.templates.game import Game
-from src.templates.ui import Button, Text, Row, Column
-from src.templates.player import Player
+from src.game import Game
+from src.ui import Button, Text, Row, Column
+from src.player import Player
 import pygame
 
 
