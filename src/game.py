@@ -1,6 +1,5 @@
 import sys
 import pygame
-from .ui import Text
 
 
 class Game:
@@ -83,15 +82,15 @@ class Game:
             self.use_image_background = False
 
     def _create_fps_counter(self):
+        from .ui import Text
+        
         self.fps_counter = Text(
             position=self.fps_position,
             text='FPS: 0',
             text_color=self.fps_color,
-            font_name=self.fps_font,
             font_size=self.fps_font_size,
             padding=0
         )
-        self.fps_counter.rect.topleft = self.fps_position
 
     def render_fps_counter(self):
         if not self.show_fps or self.fps_counter is None:
@@ -103,11 +102,12 @@ class Game:
             fps = self.target_fps
         
         self.fps_counter.update_text(f'FPS: {fps}')
-        self.fps_counter.rect.topleft = self.fps_position
         self.screen.blit(self.fps_counter.image, self.fps_counter.rect)
 
     def handle_events(self):
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        
+        for event in events:
             if event.type == pygame.QUIT:
                 self.running = False
             if event.type == pygame.KEYDOWN:
