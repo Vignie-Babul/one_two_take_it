@@ -27,7 +27,7 @@ def handle_custom_events(event):
 			keys_pressed['up'] = True
 		if event.key in [pygame.K_DOWN, pygame.K_s]:
 			keys_pressed['down'] = True
-	
+
 	if event.type == pygame.KEYUP:
 		if event.key in [pygame.K_LEFT, pygame.K_a]:
 			keys_pressed['left'] = False
@@ -41,7 +41,7 @@ def handle_custom_events(event):
 def update_game():
 	player.stop_horizontal()
 	player.stop_vertical()
-	
+
 	if keys_pressed['left']:
 		player.move('left')
 	if keys_pressed['right']:
@@ -50,7 +50,7 @@ def update_game():
 		player.move('up')
 	if keys_pressed['down']:
 		player.move('down')
-	
+
 	player_group.update(game.width, game.height)
 
 def render_game():
@@ -58,12 +58,12 @@ def render_game():
 		game.screen.blit(game.background_image, (0, 0))
 	else:
 		game.screen.fill(game.background_color)
-	
+
 	player_group.draw(game.screen)
-	
+
 	game.ui_group.draw(game.screen)
 	game.ui_group.update()
-	
+
 	game.render_fps_counter()
 
 
