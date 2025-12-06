@@ -8,10 +8,7 @@ dependencies = [
     "pygame-widgets>=1.2.3",
 ]
 
-[tool.uv.workspace]
-members = [
-    "iph2VR",
-]
+
 [tool.ruff]
 indent-width = 4
 line-length = 120
