@@ -23,14 +23,15 @@ class Player(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect(center=position)
 
 	def move(self, direction) -> None:
-		if direction == 'left':
-			self._velocity.x = -self._speed
-		elif direction == 'right':
-			self._velocity.x = self._speed
-		elif direction == 'up':
-			self._velocity.y = -self._speed
-		elif direction == 'down':
-			self._velocity.y = self._speed
+		match direction:
+			case 'left':
+				self._velocity.x = -self._speed
+			case 'right':
+				self._velocity.x = self._speed
+			case 'up':
+				self._velocity.y = -self._speed
+			case 'down':
+				self._velocity.y = self._speed
 
 	def stop_horizontal(self) -> None:
 		self._velocity.x = 0
@@ -42,9 +43,6 @@ class Player(pygame.sprite.Sprite):
 		self.image.fill(color)
 
 	def update(self, screen_width, screen_height) -> None:
-		self.rect.x += self._velocity.x
-		self.rect.y += self._velocity.y
-
 		if self.rect.left < 0:
 			self.rect.left = 0
 		if self.rect.right > screen_width:
@@ -53,3 +51,5 @@ class Player(pygame.sprite.Sprite):
 			self.rect.top = 0
 		if self.rect.bottom > screen_height:
 			self.rect.bottom = screen_height
+
+		self.rect.move_ip(self._velocity.x, self._velocity.y)
