@@ -2,6 +2,9 @@ import sys
 import pygame
 
 
+pygame.init()
+
+
 class Game:
 	def __init__(
 		self,
@@ -18,7 +21,6 @@ class Game:
 		fps_font=None,
 		fps_font_size=20
 	):
-		pygame.init()
 		
 		self.title = title
 		self.width = width

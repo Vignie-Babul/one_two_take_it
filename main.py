@@ -5,6 +5,9 @@ from src.ui import Button, Text
 from src.player import Player
 
 
+pygame.init()
+
+
 keys_pressed = {
 	'left': False,
 	'right': False,

@@ -1,6 +1,9 @@
 import pygame
 
 
+pygame.init()
+
+
 class UI(pygame.sprite.Sprite):
 	DEFAULT_BACKGROUND_COLOR = '#050505'
 	DEFAULT_TEXT_COLOR = '#f2f2f2'
