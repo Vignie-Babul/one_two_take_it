@@ -1,4 +1,5 @@
 import sys
+
 import pygame
 
 
@@ -12,7 +13,7 @@ class Game:
 		width=1280,
 		height=720,
 		target_fps=60,
-		fps_lock=True,
+		fps_lock=False,
 		fullscreen=False,
 		background='#000000',
 		show_fps=True,
