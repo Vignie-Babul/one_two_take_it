@@ -42,14 +42,14 @@ class Player(pygame.sprite.Sprite):
 	def set_color(self, color) -> None:
 		self.image.fill(color)
 
-	def update(self, screen_width, screen_height) -> None:
+	def update(self, screen_size) -> None:
 		if self.rect.left < 0:
 			self.rect.left = 0
-		if self.rect.right > screen_width:
-			self.rect.right = screen_width
+		if self.rect.right > screen_size[0]:
+			self.rect.right = screen_size[0]
 		if self.rect.top < 0:
 			self.rect.top = 0
-		if self.rect.bottom > screen_height:
-			self.rect.bottom = screen_height
+		if self.rect.bottom > screen_size[1]:
+			self.rect.bottom = screen_size[1]
 
 		self.rect.move_ip(self._velocity.x, self._velocity.y)
