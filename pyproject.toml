@@ -5,7 +5,6 @@ description = ""
 requires-python = ">=3.12"
 dependencies = [
     "pygame>=2.6.1",
-    "pygame-widgets>=1.2.3",
 ]
 
 
