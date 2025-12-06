@@ -16,10 +16,6 @@ keys_pressed = {
 }
 
 
-def change_color(player: Player) -> None:
-	player.set_color('#ff0000')
-
-
 def handle_custom_events(event) -> None:
 	if event.type == pygame.KEYDOWN:
 		match event.key:
@@ -92,7 +88,7 @@ def main() -> None:
 		position=(game.width // 2 - 75, 20),
 		size=(150, 50),
 		text='Red Color',
-		command=lambda: change_color(player),
+		command=lambda: player.set_color('#ff0000'),
 		background_color='#ff0000',
 		text_color='#ffffff',
 		border_width=2,
