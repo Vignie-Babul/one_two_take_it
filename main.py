@@ -16,7 +16,7 @@ keys_pressed = {
 }
 
 
-def change_color() -> None:
+def change_color(player: Player) -> None:
 	player.set_color('#ff0000')
 
 
@@ -43,7 +43,7 @@ def handle_custom_events(event) -> None:
 			case pygame.K_DOWN | pygame.K_s:
 				keys_pressed['down'] = False
 
-def update_game() -> None:
+def update_game(game: Game, player: Player, player_group: pygame.sprite.Group) -> None:
 	player.stop_horizontal()
 	player.stop_vertical()
 
@@ -58,7 +58,7 @@ def update_game() -> None:
 
 	player_group.update(game.width, game.height)
 
-def render_game() -> None:
+def render_game(game: Game, player_group: pygame.sprite.Group) -> None:
 	if game.use_image_background and game.background_image:
 		game.screen.blit(game.background_image, (0, 0))
 	else:
@@ -75,9 +75,6 @@ def render_game() -> None:
 def main() -> None:
 	game = Game(title='Player Demo')
 	game.on_event = handle_custom_events
-	game.update = update_game
-	game.render = render_game
-
 
 	player_group = pygame.sprite.Group()
 	player = Player(
@@ -88,12 +85,14 @@ def main() -> None:
 	)
 	player_group.add(player)
 
+	game.update = lambda: update_game(game, player, player_group)
+	game.render = lambda: render_game(game, player_group)
 
 	button = Button(
 		position=(game.width // 2 - 75, 20),
 		size=(150, 50),
 		text='Red Color',
-		command=change_color,
+		command=lambda: change_color(player),
 		background_color='#ff0000',
 		text_color='#ffffff',
 		border_width=2,
@@ -116,6 +115,8 @@ def main() -> None:
 	)
 	game.ui_group.add(info_text)
 
+	game.run()
+
 
 if __name__ == '__main__':
-	game.run()
+	main()
