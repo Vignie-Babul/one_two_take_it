@@ -14,39 +14,42 @@ class Player(pygame.sprite.Sprite):
 	) -> None:
 
 		super().__init__()
-		
-		self.size = size
-		self.color = color
-		self.speed = speed
 
-		self.velocity = pygame.math.Vector2(0, 0)
-		
+		self._size = size
+		self._color = color
+		self._speed = speed
+
+		self._velocity = pygame.math.Vector2(0, 0)
+
 		self.image = pygame.Surface((size, size))
 		self.image.fill(color)
-		
+
 		self.rect = self.image.get_rect(center=position)
-		
-	
+
 	def move(self, direction) -> None:
 		if direction == 'left':
-			self.velocity.x = -self.speed
+			self._velocity.x = -self._speed
 		elif direction == 'right':
-			self.velocity.x = self.speed
+			self._velocity.x = self._speed
 		elif direction == 'up':
-			self.velocity.y = -self.speed
+			self._velocity.y = -self._speed
 		elif direction == 'down':
-			self.velocity.y = self.speed
-	
+			self._velocity.y = self._speed
+
 	def stop_horizontal(self) -> None:
-		self.velocity.x = 0
-	
+		self._velocity.x = 0
+
 	def stop_vertical(self) -> None:
-		self.velocity.y = 0
-	
+		self._velocity.y = 0
+
+	def set_color(self, color) -> None:
+		self._color = color
+		self.image.fill(color)
+
 	def update(self, screen_width, screen_height) -> None:
-		self.rect.x += self.velocity.x
-		self.rect.y += self.velocity.y
-		
+		self.rect.x += self._velocity.x
+		self.rect.y += self._velocity.y
+
 		if self.rect.left < 0:
 			self.rect.left = 0
 		if self.rect.right > screen_width:
@@ -55,7 +58,3 @@ class Player(pygame.sprite.Sprite):
 			self.rect.top = 0
 		if self.rect.bottom > screen_height:
 			self.rect.bottom = screen_height
-	
-	def set_color(self, color) -> None:
-		self.color = color
-		self.image.fill(color)
