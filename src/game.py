@@ -2,121 +2,52 @@ import sys
 
 import pygame
 
+# from .utils import is_file_valid
+
 
 pygame.init()
+
+
+def render_fps_counter(master, clock, pos=(4, 4)) -> None:
+	fps = round(clock.get_fps())
+	font = pygame.font.SysFont('', 20)
+	surface = font.render(f'FPS: {fps}', True, '#f2f2f2', None)
+	master.blit(surface, pos)
+
+	# TODO: fps lock for animations
+	# if self.fps_lock and fps > self.fps:
+	# 	fps = self.fps
 
 
 class Game:
 	def __init__(
 		self,
-		title='Window',
-		width=1280,
-		height=720,
-		target_fps=60,
-		fps_lock=False,
-		fullscreen=False,
-		background='#000000',
+		title='PyGame',
+		size=(1280, 720),
+		bg='#000000',
+		fps=60,
 		show_fps=True,
-		fps_color='#ffffff',
-		fps_position=(10, 10),
-		fps_font=None,
-		fps_font_size=20
 	) -> None:
-		
-		self.title = title
-		self.width = width
-		self.height = height
-		self.target_fps = target_fps
-		self.fps_lock = fps_lock
-		self.fullscreen = fullscreen
-		self.background = background
-		self.show_fps = show_fps
-		self.fps_color = fps_color
-		self.fps_position = fps_position
-		self.fps_font = fps_font
-		self.fps_font_size = fps_font_size
-		
-		self.display_info = {'width': width, 'height': height}
-		
-		if self.fullscreen:
-			self.screen = pygame.display.set_mode(
-				(self.width, self.height),
-				pygame.FULLSCREEN
-			)
-		else:
-			self.screen = pygame.display.set_mode((width, height))
-		
+
+		self.size = size
+		self._bg = bg
+		self._fps = fps
+		self._show_fps = show_fps
+
+		self._screen = pygame.display.set_mode(self.size)
 		pygame.display.set_caption(title)
-		self.clock = pygame.time.Clock()
-		self.running = False
-		
-		self.use_image_background = False
-		self.background_image = None
-		self.background_color = '#000000'
-		
-		if isinstance(background, str):
-			if background.startswith('#'):
-				self.background_color = background
-				self.use_image_background = False
-			else:
-				self._load_background_image(background)
-		else:
-			self.background_color = background
-			self.use_image_background = False
-		
-		self.fps_counter = None
-		if self.show_fps:
-			self._create_fps_counter()
-		
-		self.ui_group = pygame.sprite.Group()
+		self._clock = pygame.time.Clock()
 
-	def _load_background_image(self, image_path) -> None:
-		try:
-			self.background_image = pygame.image.load(image_path).convert()
-			self.background_image = pygame.transform.scale(
-				self.background_image,
-				(self.screen.get_width(), self.screen.get_height())
-			)
-			self.use_image_background = True
-		except (FileNotFoundError, pygame.error) as e:
-			print(f'Warning: Could not load background image: {image_path}')
-			print(f'Error: {e}')
-			self.background_color = '#000000'
-			self.use_image_background = False
-
-	def _create_fps_counter(self) -> None:
-		from .ui import Text
-		
-		self.fps_counter = Text(
-			position=self.fps_position,
-			text='FPS: 0',
-			text_color=self.fps_color,
-			font_size=self.fps_font_size,
-			padding=0
-		)
-
-	def render_fps_counter(self) -> None:
-		if not self.show_fps or self.fps_counter is None:
-			return
-		
-		fps = round(self.clock.get_fps())
-		
-		if self.fps_lock and fps > self.target_fps:
-			fps = self.target_fps
-		
-		self.fps_counter.update_text(f'FPS: {fps}')
-		self.screen.blit(self.fps_counter.image, self.fps_counter.rect)
+		self._is_game_loop = False
 
 	def handle_events(self) -> None:
-		events = pygame.event.get()
-		
-		for event in events:
+		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
-				self.running = False
+				self._is_game_loop = False
 			if event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_ESCAPE:
-					self.running = False
-			
+					self._is_game_loop = False
+
 			self.on_event(event)
 
 	def on_event(self, event) -> None:
@@ -126,27 +57,23 @@ class Game:
 		pass
 
 	def render(self) -> None:
-		if self.use_image_background and self.background_image:
-			self.screen.blit(self.background_image, (0, 0))
-		else:
-			self.screen.fill(self.background_color)
-		
-		self.ui_group.draw(self.screen)
-		self.ui_group.update()
-		
-		self.render_fps_counter()
+		self._screen.fill(self._bg)
+		if self._show_fps:
+			render_fps_counter(self._screen, self._clock)
 
-	def run(self) -> None:
-		self.running = True
-		while self.running:
-			self.handle_events()
-			self.update()
-			self.render()
-			pygame.display.flip()
-			self.clock.tick(self.target_fps)
-		
-		self.quit()
+		pygame.display.flip()
 
 	def quit(self) -> None:
 		pygame.quit()
 		sys.exit()
+
+	def run(self) -> None:
+		self._is_game_loop = True
+
+		while self._is_game_loop:
+			self.render()
+			self.update()
+			self.handle_events()
+			self._clock.tick(self._fps)
+
+		self.quit()
