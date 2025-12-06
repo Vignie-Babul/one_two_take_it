@@ -8,22 +8,18 @@ class Player(pygame.sprite.Sprite):
 	def __init__(
 		self,
 		position,
-		size=50,
+		size=(50, 50),
 		color='#00ff00',
 		speed=5
 	) -> None:
 
 		super().__init__()
 
-		self._size = size
-		self._color = color
 		self._speed = speed
-
 		self._velocity = pygame.math.Vector2(0, 0)
 
-		self.image = pygame.Surface((size, size))
+		self.image = pygame.Surface(size)
 		self.image.fill(color)
-
 		self.rect = self.image.get_rect(center=position)
 
 	def move(self, direction) -> None:
@@ -43,7 +39,6 @@ class Player(pygame.sprite.Sprite):
 		self._velocity.y = 0
 
 	def set_color(self, color) -> None:
-		self._color = color
 		self.image.fill(color)
 
 	def update(self, screen_width, screen_height) -> None:
