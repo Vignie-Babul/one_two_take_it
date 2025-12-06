@@ -117,7 +117,8 @@ class Text(UI):
 		border_width=None,
 		border_color=None,
 		padding=10
-	):
+	) -> None:
+
 		self.text = text
 		self.text_color = text_color or self.DEFAULT_TEXT_COLOR
 		self.background_color = background_color
@@ -139,7 +140,7 @@ class Text(UI):
 		self.image = None
 		self.render()
 	
-	def render(self):
+	def render(self) -> None:
 		text_surface = self.font.render(self.text, True, self.text_color)
 		text_size = text_surface.get_size()
 		
@@ -170,6 +171,6 @@ class Text(UI):
 		self.image = self.surface
 		self.rect = self.image.get_rect(topleft=self.position)
 	
-	def update_text(self, new_text):
+	def update_text(self, new_text) -> None:
 		self.text = new_text
 		self.render()

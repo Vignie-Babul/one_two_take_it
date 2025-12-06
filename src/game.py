@@ -17,11 +17,11 @@ class Game:
 		fullscreen=False,
 		background='#000000',
 		show_fps=True,
-		fps_color='#FFFFFF',
+		fps_color='#ffffff',
 		fps_position=(10, 10),
 		fps_font=None,
 		fps_font_size=20
-	):
+	) -> None:
 		
 		self.title = title
 		self.width = width
@@ -70,7 +70,7 @@ class Game:
 		
 		self.ui_group = pygame.sprite.Group()
 
-	def _load_background_image(self, image_path):
+	def _load_background_image(self, image_path) -> None:
 		try:
 			self.background_image = pygame.image.load(image_path).convert()
 			self.background_image = pygame.transform.scale(
@@ -84,7 +84,7 @@ class Game:
 			self.background_color = '#000000'
 			self.use_image_background = False
 
-	def _create_fps_counter(self):
+	def _create_fps_counter(self) -> None:
 		from .ui import Text
 		
 		self.fps_counter = Text(
@@ -95,7 +95,7 @@ class Game:
 			padding=0
 		)
 
-	def render_fps_counter(self):
+	def render_fps_counter(self) -> None:
 		if not self.show_fps or self.fps_counter is None:
 			return
 		
@@ -107,7 +107,7 @@ class Game:
 		self.fps_counter.update_text(f'FPS: {fps}')
 		self.screen.blit(self.fps_counter.image, self.fps_counter.rect)
 
-	def handle_events(self):
+	def handle_events(self) -> None:
 		events = pygame.event.get()
 		
 		for event in events:
@@ -119,13 +119,13 @@ class Game:
 			
 			self.on_event(event)
 
-	def on_event(self, event):
+	def on_event(self, event) -> None:
 		pass
 
-	def update(self):
+	def update(self) -> None:
 		pass
 
-	def render(self):
+	def render(self) -> None:
 		if self.use_image_background and self.background_image:
 			self.screen.blit(self.background_image, (0, 0))
 		else:
@@ -136,7 +136,7 @@ class Game:
 		
 		self.render_fps_counter()
 
-	def run(self):
+	def run(self) -> None:
 		self.running = True
 		while self.running:
 			self.handle_events()
@@ -147,6 +147,6 @@ class Game:
 		
 		self.quit()
 
-	def quit(self):
+	def quit(self) -> None:
 		pygame.quit()
 		sys.exit()
