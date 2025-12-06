@@ -2,8 +2,6 @@ import sys
 
 import pygame
 
-# from .utils import is_file_valid
-
 
 pygame.init()
 
