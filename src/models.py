@@ -57,3 +57,36 @@ class ObjectOrderedSet:
 				self._deleted_items[obj] = None
 
 		self._delete_items()
+
+
+if __name__ == '__main__':
+	objs = ObjectOrderedSet('a', 'b', 'c')
+	print(objs)
+
+	objs.add('f')
+	print(objs)
+
+	objs.remove('b')
+	print(objs)
+
+	try:
+		objs.remove('e')
+	except KeyError:
+		print('KeyError')
+	finally:
+		print(objs)
+
+	print(''.join(objs))
+
+	if objs:
+		print('1 not empty')
+	else:
+		print('1 empty')
+
+	objs.clear()
+	print(objs)
+
+	if objs:
+		print('2 not empty')
+	else:
+		print('2 empty')
