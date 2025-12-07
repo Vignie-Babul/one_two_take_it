@@ -40,19 +40,14 @@ class Game:
 
 	def handle_events(self) -> None:
 		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				self._is_game_loop = False
-			if event.type == pygame.KEYDOWN:
-				if event.key == pygame.K_ESCAPE:
+			match event.type:
+				case pygame.QUIT:
 					self._is_game_loop = False
 
-			self.on_event(event)
-
-	def on_event(self, event) -> None:
-		pass
-
-	def update(self) -> None:
-		pass
+				case pygame.KEYDOWN:
+					match event.key:
+						case pygame.K_ESCAPE:
+							self._is_game_loop = False
 
 	def render(self) -> None:
 		self._screen.fill(self._bg)
@@ -70,7 +65,6 @@ class Game:
 
 		while self._is_game_loop:
 			self.render()
-			self.update()
 			self.handle_events()
 			self._clock.tick(self._fps)
 
