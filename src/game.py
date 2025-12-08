@@ -81,10 +81,10 @@ class Game:
 
 	def render(self) -> None:
 		self._screen.fill(self._bg)
+		self._player_group.draw(self._screen)
+
 		if self._show_fps:
 			render_fps_counter(self._screen, self._clock)
-
-		self._player_group.draw(self._screen)
 
 		pygame.display.flip()
 
