@@ -33,6 +33,13 @@ class Particle:
 		_is_out_bounds_y = self.y > self._screen_size[1]
 		return _is_out_bounds_x or _is_out_bounds_y
 
+	def draw(self, master: pygame.Surface) -> None:
+		pygame.draw.rect(
+			master,
+			'#f2f2f2',
+			(self.x, self.y, self._width, self._height)
+		)
+
 	def update(self) -> bool:
 		"""return boolean value for particle deletion from container"""
 
@@ -42,10 +49,3 @@ class Particle:
 		self.x += self._vec2.x
 		self.y += self._vec2.y
 		return True
-
-	def draw(self, master: pygame.Surface) -> None:
-		pygame.draw.rect(
-			master,
-			'#f2f2f2',
-			(self.x, self.y, self._width, self._height)
-		)
