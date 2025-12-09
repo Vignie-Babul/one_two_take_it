@@ -49,8 +49,6 @@ class Player(PhysicsBody):
 		self._keys_pressed = {
 			'right': False,
 			'left': False,
-			'up': False,
-			'down': False,
 			'jump': False,
 		}
 

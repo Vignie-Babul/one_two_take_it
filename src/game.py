@@ -33,6 +33,7 @@ class Game:
 		enable_boundaries: bool = True,
 		boundary_color: str = '#ff0000',
 	) -> None:
+
 		self.size = size
 		self._bg = bg
 		self._fps = fps
@@ -104,6 +105,21 @@ class Game:
 		if self._enable_boundaries:
 			self._create_boundaries()
 
+	def _handle_user_input(self, event, state):
+		match event.key:
+			case pygame.K_LEFT | pygame.K_a:
+				self._player.move_key('left', state)
+			case pygame.K_RIGHT | pygame.K_d:
+				self._player.move_key('right', state)
+			case pygame.K_SPACE:
+				self._player.move_key('jump', state)
+			case _:
+				match event.unicode.lower():
+					case 'ф':
+						self._player.move_key('left', state)
+					case 'в':
+						self._player.move_key('right', state)
+
 	def handle_events(self) -> None:
 		for event in pygame.event.get():
 			match event.type:
@@ -111,33 +127,13 @@ class Game:
 					self._is_game_loop = False
 
 				case pygame.KEYDOWN:
-					match event.key:
-						case pygame.K_ESCAPE:
-							self._is_game_loop = False
-						
-						case pygame.K_LEFT | pygame.K_a:
-							self._player.move_key('left', True)
-						case pygame.K_RIGHT | pygame.K_d:
-							self._player.move_key('right', True)
-						case pygame.K_UP | pygame.K_w:
-							self._player.move_key('up', True)
-						case pygame.K_DOWN | pygame.K_s:
-							self._player.move_key('down', True)
-						case pygame.K_SPACE:
-							self._player.move_key('jump', True)
+					if event.key == pygame.K_ESCAPE:
+						self._is_game_loop = False
+					else:
+						self._handle_user_input(event, True)
 
 				case pygame.KEYUP:
-					match event.key:
-						case pygame.K_LEFT | pygame.K_a:
-							self._player.move_key('left', False)
-						case pygame.K_RIGHT | pygame.K_d:
-							self._player.move_key('right', False)
-						case pygame.K_UP | pygame.K_w:
-							self._player.move_key('up', False)
-						case pygame.K_DOWN | pygame.K_s:
-							self._player.move_key('down', False)
-						case pygame.K_SPACE:
-							self._player.move_key('jump', False)
+					self._handle_user_input(event, False)
 
 				case pygame.VIDEORESIZE:
 					self._handle_resize(event.w, event.h)
@@ -156,7 +152,7 @@ class Game:
 
 		if self._enable_boundaries:
 			self._boundary_group.draw(self._screen)
-		
+
 		self._platform_group.draw(self._screen)
 		self._player_group.draw(self._screen)
 
