@@ -41,7 +41,7 @@ class ObjectOrderedSet:
 
 		for obj in self._items:
 			method = getattr(obj, self._draw_name, None)
-			if (method is not None) and callable(method):
+			if callable(method):
 				method(*args, **kwargs)
 
 	def update(self, *args, **kwargs) -> None:
@@ -53,40 +53,7 @@ class ObjectOrderedSet:
 		for obj in self._items:
 			method = getattr(obj, self._update_name, None)
 			result = method(*args, **kwargs)
-			if (method is not None) and callable(method) and (result is False):
+			if callable(method) and (result is False):
 				self._deleted_items[obj] = None
 
 		self._delete_items()
-
-
-if __name__ == '__main__':
-	objs = ObjectOrderedSet('a', 'b', 'c')
-	print(objs)
-
-	objs.add('f')
-	print(objs)
-
-	objs.remove('b')
-	print(objs)
-
-	try:
-		objs.remove('e')
-	except KeyError:
-		print('KeyError')
-	finally:
-		print(objs)
-
-	print(''.join(objs))
-
-	if objs:
-		print('1 not empty')
-	else:
-		print('1 empty')
-
-	objs.clear()
-	print(objs)
-
-	if objs:
-		print('2 not empty')
-	else:
-		print('2 empty')
