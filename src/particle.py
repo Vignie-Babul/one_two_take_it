@@ -6,6 +6,8 @@ class Particle:
 		self,
 		x: float,
 		y: float,
+		width: int,
+		height: int,
 		vector: pygame.math.Vector2,
 		angle: float,
 		velocity: float,
@@ -14,6 +16,8 @@ class Particle:
 
 		self.x = x
 		self.y = y
+		self._width = width
+		self._height = height
 		self._screen_size = screen_size
 
 		self._is_graphic_use = self._screen_size is not None
@@ -40,4 +44,8 @@ class Particle:
 		return True
 
 	def draw(self, master: pygame.Surface) -> None:
-		pygame.draw.rect(master, '#f2f2f2', (self.x, self.y, 1, 2))
+		pygame.draw.rect(
+			master,
+			'#f2f2f2',
+			(self.x, self.y, self._width, self._height)
+		)
