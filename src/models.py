@@ -11,7 +11,7 @@ class ObjectOrderedSet(Generic[T]):
 		self,
 		*items: T | None,
 		draw_name: str = 'draw',
-		update_name: str = 'update'
+		update_name: str = 'update',
 	) -> None:
 
 		self._items = OrderedDict.fromkeys(items)
