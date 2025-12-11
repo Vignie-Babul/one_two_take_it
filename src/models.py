@@ -63,7 +63,7 @@ class ObjectOrderedSet(Generic[T]):
 		for obj in self._items:
 			method = getattr(obj, self._update_name, None)
 			if not callable(method):
-				return
+				continue
 
 			result = method(*args, **kwargs)
 			if result is False:
