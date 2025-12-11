@@ -1,9 +1,19 @@
 from collections import OrderedDict
-from typing import Any
+from collections.abc import Iterable, Iterator
+from typing import Generic, TypeVar
 
 
-class ObjectOrderedSet:
-	def __init__(self, *items: Any, draw_name='draw', update_name='update') -> None:
+T = TypeVar('T')
+
+
+class ObjectOrderedSet(Generic[T]):
+	def __init__(
+		self,
+		*items: T | None,
+		draw_name: str = 'draw',
+		update_name: str = 'update'
+	) -> None:
+
 		self._items = OrderedDict.fromkeys(items)
 		self._deleted_items = OrderedDict()
 
@@ -14,8 +24,8 @@ class ObjectOrderedSet:
 		items_repr = ", ".join(map(repr, self._items))
 		return f'{self.__class__.__name__}({items_repr})'
 
-	def __iter__(self) -> None:
-		return iter(self._items)
+	def __iter__(self) -> Iterator[T]:
+		return iter(self._items.keys())
 
 	def __len__(self) -> int:
 		return len(self._items)
@@ -27,13 +37,13 @@ class ObjectOrderedSet:
 
 			self._deleted_items.clear()
 
-	def add(self, item: Any) -> None:
+	def add(self, item: T) -> None:
 		self._items[item] = None
 
 	def clear(self) -> None:
 		self._items.clear()
 
-	def remove(self, item: Any) -> None:
+	def remove(self, item: T) -> None:
 		del self._items[item]
 
 	def draw(self, *args, **kwargs) -> None:
@@ -52,8 +62,11 @@ class ObjectOrderedSet:
 
 		for obj in self._items:
 			method = getattr(obj, self._update_name, None)
+			if not callable(method):
+				return
+
 			result = method(*args, **kwargs)
-			if callable(method) and (result is False):
+			if result is False:
 				self._deleted_items[obj] = None
 
 		self._delete_items()
