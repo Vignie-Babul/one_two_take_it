@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterator
 from typing import Generic, TypeVar
 
 
@@ -9,7 +9,7 @@ T = TypeVar('T')
 class ObjectOrderedSet(Generic[T]):
 	def __init__(
 		self,
-		*items: T | None,
+		*items: T,
 		draw_name: str = 'draw',
 		update_name: str = 'update',
 	) -> None:
