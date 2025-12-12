@@ -1,7 +1,5 @@
-from __future__ import annotations
-
-import pygame
 from Box2D import b2World, b2Vec2, b2PolygonShape, b2CircleShape, b2BodyDef, b2FixtureDef
+import pygame
 
 
 class PhysicsWorld:
