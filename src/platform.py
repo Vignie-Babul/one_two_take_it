@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import pygame
 
 from .physic import PhysicsBody
