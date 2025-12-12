@@ -1,5 +1,7 @@
 import os
 
+import pygame
+
 
 def is_file_valid(path: str) -> bool:
 	if not os.path.exists(path):
@@ -11,3 +13,11 @@ def is_file_valid(path: str) -> bool:
 		return False
 
 	return True
+
+
+def save_sprite_load(path: str) -> pygame.Surface | None:
+	if is_file_valid(path):
+		return pygame.image.load(path).convert_alpha()
+
+	return
+

@@ -3,18 +3,20 @@ import pygame
 from src.game import Game
 from src.player import Player
 from src.platform import Platform
+from src.utils import save_sprite_load
 
 
 pygame.init()
 
 
+textures = {
+	'player_left': 'assets/graphic/player_left.png',
+	'player_right': 'assets/graphic/player_right.png',
+	'courier_bag': 'assets/graphic/courier_bag.png',
+}
+
+
 def main() -> None:
-	pygame.display.set_mode((1, 1))
-
-	left_texture = pygame.image.load('assets/graphic/player_left.png').convert_alpha()
-	right_texture = pygame.image.load('assets/graphic/player_right.png').convert_alpha()
-	bag_texture = pygame.image.load('assets/graphic/courier_bag.png').convert_alpha()
-
 	platform_group = pygame.sprite.Group()
 
 	game = Game(
@@ -46,6 +48,10 @@ def main() -> None:
 		color='#404040',
 	)
 	platform_group.add(platform2)
+
+	left_texture = save_sprite_load(textures['player_left'])
+	right_texture = save_sprite_load(textures['player_right'])
+	bag_texture = save_sprite_load(textures['courier_bag'])
 
 	player = Player(
 		physics_world=game.physics_world,
