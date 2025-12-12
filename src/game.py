@@ -201,7 +201,7 @@ class Game:
 
 		if self._show_fps:
 			render_fps_counter(self._screen, self._clock)
-	 
+
 		pygame.display.flip()
 
 	def quit(self) -> None:
