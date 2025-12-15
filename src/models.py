@@ -1,12 +1,12 @@
 from collections import OrderedDict
 from collections.abc import Iterator
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 
 T = TypeVar('T')
 
 
-class ObjectOrderedSet(Generic[T]):
+class ObjectOrderedSet[T]:
 	def __init__(
 		self,
 		*items: T,
@@ -14,8 +14,8 @@ class ObjectOrderedSet(Generic[T]):
 		update_name: str = 'update',
 	) -> None:
 
-		self._items = OrderedDict.fromkeys(items)
-		self._deleted_items = OrderedDict()
+		self._items: OrderedDict[T, None] = OrderedDict.fromkeys(items)
+		self._deleted_items: OrderedDict[T, None] = OrderedDict()
 
 		self._draw_name = draw_name
 		self._update_name = update_name
