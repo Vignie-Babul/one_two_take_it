@@ -90,11 +90,13 @@ class BagDebris:
 		self._update_surface()
 		return True
 
-	def draw(self, surface: pygame.Surface) -> None:
-		if self._alpha > 0:
-			draw_x = int(self._x - self._surface.get_width() / 2)
-			draw_y = int(self._y - self._surface.get_height() / 2)
-			surface.blit(self._surface, (draw_x, draw_y))
+	def draw(self, surface: pygame.Surface, cam_offset: tuple[int, int] = (0, 0)) -> None:
+		if self._alpha <= 0:
+			return
+		ox, oy = cam_offset
+		draw_x = int(self._x - self._surface.get_width() / 2) - ox
+		draw_y = int(self._y - self._surface.get_height() / 2) - oy
+		surface.blit(self._surface, (draw_x, draw_y))
 
 	@property
 	def depth(self) -> float:

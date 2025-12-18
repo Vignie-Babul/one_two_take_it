@@ -1,3 +1,6 @@
+import math
+import random
+
 from Box2D import b2Vec2, b2DistanceJointDef, b2PolygonShape, b2FixtureDef
 import pygame
 
@@ -10,9 +13,20 @@ class PlayerPart(PhysicsBody):
 		physics_world,
 		position: tuple[int | float, int | float],
 		size: tuple[int | float, int | float],
-		texture: pygame.Surface | None = None,
+		texture_left: pygame.Surface | None = None,
+		texture_right: pygame.Surface | None = None,
 		color: str = '#00ff00',
 	) -> None:
+		self._texture_left = texture_left
+		self._texture_right = texture_right
+		self._current_texture = texture_left if texture_left else texture_right
+		self._color = color
+		self._facing_right = False
+		self._walk_offset_y = 0
+		self._walk_time = random.uniform(0, math.pi * 2)
+		self._walk_speed = random.uniform(8, 12)
+		self._walk_amplitude = random.uniform(2, 4)
+
 		super().__init__(
 			physics_world=physics_world,
 			position=position,
@@ -24,19 +38,40 @@ class PlayerPart(PhysicsBody):
 			restitution=0.0
 		)
 
-		self._texture = texture
-		self._color = color
 		self.body.fixedRotation = True
 		self.body.bullet = True
-
 		self._render()
 
+	def set_direction(self, facing_right: bool) -> None:
+		if self._facing_right != facing_right:
+			self._facing_right = facing_right
+			if facing_right and self._texture_right:
+				self._current_texture = self._texture_right
+			elif not facing_right and self._texture_left:
+				self._current_texture = self._texture_left
+			self._render()
+
+	def update_walk_animation(self, dt: float, is_moving: bool) -> None:
+		if is_moving:
+			self._walk_time += dt * self._walk_speed
+			self._walk_offset_y = math.sin(self._walk_time) * self._walk_amplitude
+		else:
+			self._walk_offset_y = 0
+			self._walk_time = 0
+
 	def _render(self) -> None:
-		if self._texture is not None:
-			self.image = pygame.transform.scale(self._texture, self.size)
+		if self._current_texture is not None:
+			self.image = pygame.transform.scale(self._current_texture, self.size)
 		else:
 			self.image = pygame.Surface(self.size, pygame.SRCALPHA)
 			self.image.fill(self._color)
+
+	def _update_sprite_position(self) -> None:
+		screen_pos = self.physics_world.world_to_screen(
+			(self.body.position.x, self.body.position.y)
+		)
+		adjusted_y = screen_pos[1] + self._walk_offset_y
+		self.rect.center = (screen_pos[0], adjusted_y)
 
 
 class CourierBag(PhysicsBody):
@@ -59,15 +94,12 @@ class CourierBag(PhysicsBody):
 			friction=0.2,
 			restitution=0.1
 		)
-
 		self._texture = texture
 		self._color = color
 		self._max_distance = max_distance
 		self._is_torn = False
-
 		self.body.fixedRotation = False
 		self.body.bullet = True
-		
 		self._render()
 
 	def _render(self) -> None:
@@ -81,11 +113,9 @@ class CourierBag(PhysicsBody):
 
 	def check_tear(self, left_pos: b2Vec2, right_pos: b2Vec2) -> bool:
 		distance = (right_pos - left_pos).length
-
 		if distance > self._max_distance:
 			self._is_torn = True
 			return True
-
 		return False
 
 	def start_tear_animation(self) -> None:
@@ -124,7 +154,6 @@ class CourierBag(PhysicsBody):
 		scaled.set_alpha(int(self._tear_alpha))
 		self.image = scaled
 		self.rect = self.image.get_rect(center=self.rect.center)
-
 		return False
 
 	def reset(self) -> None:
@@ -132,15 +161,12 @@ class CourierBag(PhysicsBody):
 		self._is_tearing = False
 		self._render()
 		self.rect = self.image.get_rect()
-	
 		for fixture in self.body.fixtures:
 			self.body.DestroyFixture(fixture)
-	
 		size_meters = (
 			self.physics_world.pixels_to_meters(self.size[0]) / 2,
 			self.physics_world.pixels_to_meters(self.size[1]) / 2
 		)
-	
 		shape = b2PolygonShape(box=size_meters)
 		fixture_def = b2FixtureDef(
 			shape=shape,
@@ -149,7 +175,7 @@ class CourierBag(PhysicsBody):
 			restitution=0.1
 		)
 		self.body.CreateFixture(fixture_def)
-	
+
 	@property
 	def is_torn(self) -> bool:
 		return self._is_torn
@@ -163,42 +189,47 @@ class Player(pygame.sprite.Sprite):
 		size: int | float = 50,
 		speed: int | float = 10,
 		jump_force: int | float = 150,
-		left_texture: pygame.Surface | None = None,
-		right_texture: pygame.Surface | None = None,
+		left_texture_left: pygame.Surface | None = None,
+		left_texture_right: pygame.Surface | None = None,
+		right_texture_left: pygame.Surface | None = None,
+		right_texture_right: pygame.Surface | None = None,
 		bag_texture: pygame.Surface | None = None,
+		sound_manager = None,
 	) -> None:
 		super().__init__()
-	
 		self._physics_world = physics_world
 		self._initial_position = position
 		self._size = size
 		self._speed = speed
 		self._jump_force = jump_force
-	
+		self._sound_manager = sound_manager
+
 		part_width = int(size * 0.4)
 		part_height = int(size * 1.2)
 		bag_size = int(size * 0.65)
 		gap = 8
-	
+
 		left_x = position[0] - part_width // 2 - gap - bag_size // 2
 		right_x = position[0] + part_width // 2 + gap + bag_size // 2
-	
+
 		self._left_part = PlayerPart(
 			physics_world=physics_world,
 			position=(left_x, position[1]),
 			size=(part_width, part_height),
-			texture=left_texture,
+			texture_left=left_texture_left,
+			texture_right=left_texture_right,
 			color='#00ff00'
 		)
-	
+
 		self._right_part = PlayerPart(
 			physics_world=physics_world,
 			position=(right_x, position[1]),
 			size=(part_width, part_height),
-			texture=right_texture,
+			texture_left=right_texture_left,
+			texture_right=right_texture_right,
 			color='#00ff00'
 		)
-	
+
 		self._bag = CourierBag(
 			physics_world=physics_world,
 			position=(position[0], position[1]),
@@ -207,24 +238,30 @@ class Player(pygame.sprite.Sprite):
 			color='#8B4513',
 			max_distance=physics_world.pixels_to_meters(size * 2.0)
 		)
-	
+
 		self._left_joint = None
 		self._right_joint = None
+		self._desync_timer = 0
+		self._desync_threshold = 10
+		self._rope_stretch_distance = physics_world.pixels_to_meters(size * 1.7)
+		self._last_stretch_sound_time = 0
+		self._stretch_sound_cooldown = 0.5
 		self._create_joints()
-	
+
 		self._left_keys = {'left': False, 'jump': False}
 		self._right_keys = {'right': False, 'jump': False}
-	
 		self._left_on_ground = False
 		self._right_on_ground = False
 		self._left_jumps = 0
 		self._right_jumps = 0
 		self._max_jumps = 2
-
 		self._spawn_locked = True
 		self._spawn_lock_frames = 30
-
 		self._bag_tear_animation_done = False
+		self._explosion_applied = False
+		self._is_finished = False
+		self._explosion_sound_played = False
+		self._is_moving = False
 
 		self.image = pygame.Surface((1, 1), pygame.SRCALPHA)
 		self.rect = self.image.get_rect()
@@ -265,71 +302,102 @@ class Player(pygame.sprite.Sprite):
 			self._physics_world.world.DestroyJoint(self._right_joint)
 			self._right_joint = None
 
+	def _check_desync(self) -> bool:
+		left_on_ground = self._left_on_ground
+		right_on_ground = self._right_on_ground
+
+		if left_on_ground != right_on_ground:
+			self._desync_timer += 1
+			if self._desync_timer > self._desync_threshold:
+				return True
+		else:
+			self._desync_timer = 0
+
+		return False
+
+	def _check_rope_stretch(self, current_time: float) -> None:
+		if self._sound_manager is None or self._bag.is_torn:
+			return
+
+		distance = (self._right_part.body.position - self._left_part.body.position).length
+
+		if (distance > self._rope_stretch_distance
+			and current_time - self._last_stretch_sound_time > self._stretch_sound_cooldown):
+				self._sound_manager.play_sound('rope_stretch')
+				self._last_stretch_sound_time = current_time
+
 	def _check_ground(self, body, is_left: bool) -> bool:
 		ground_contacts = 0
-
 		for contact_edge in body.contacts:
 			contact = contact_edge.contact
 			if not contact.touching:
 				continue
-
 			world_manifold = contact.worldManifold
 			if len(world_manifold.points) < 1:
 				continue
-
 			if world_manifold.normal[1] > 0.5:
 				ground_contacts += 1
-				if len(world_manifold.points) >= 2:
-					contact_center_x = sum(p[0] for p in world_manifold.points) / len(world_manifold.points)
-					body_center_x = body.position.x
-					x_diff = abs(contact_center_x - body_center_x)
-					body_half_width = self._physics_world.pixels_to_meters(self._size * 0.4) / 2
-					if x_diff < body_half_width * 0.8:
-						return True
-				else:
+			if len(world_manifold.points) >= 2:
+				contact_center_x = sum(p[0] for p in world_manifold.points) / len(world_manifold.points)
+				body_center_x = body.position.x
+				x_diff = abs(contact_center_x - body_center_x)
+				body_half_width = self._physics_world.pixels_to_meters(self._size * 0.4) / 2
+				if x_diff < body_half_width * 0.8:
 					return True
-
+			else:
+				return True
 		return ground_contacts > 0
 
 	def _move_left_part(self) -> None:
-		if self._spawn_locked:
+		if self._spawn_locked or self._is_finished:
 			return
 		vel_left = self._left_part.body.linearVelocity
 		vel_right = self._right_part.body.linearVelocity
 		self._left_part.body.linearVelocity = b2Vec2(-self._speed, vel_left.y)
 		self._right_part.body.linearVelocity = b2Vec2(-self._speed, vel_right.y)
+		self._left_part.set_direction(False)
+		self._right_part.set_direction(False)
+		self._is_moving = True
 
 	def _move_right_part(self) -> None:
-		if self._spawn_locked:
+		if self._spawn_locked or self._is_finished:
 			return
 		vel_left = self._left_part.body.linearVelocity
 		vel_right = self._right_part.body.linearVelocity
 		self._left_part.body.linearVelocity = b2Vec2(self._speed, vel_left.y)
 		self._right_part.body.linearVelocity = b2Vec2(self._speed, vel_right.y)
+		self._left_part.set_direction(True)
+		self._right_part.set_direction(True)
+		self._is_moving = True
 
 	def _stop_left_part(self) -> None:
-		if self._spawn_locked:
+		if self._spawn_locked or self._is_finished:
 			return
 		vel_left = self._left_part.body.linearVelocity
 		vel_right = self._right_part.body.linearVelocity
 		self._left_part.body.linearVelocity = b2Vec2(0, vel_left.y)
 		self._right_part.body.linearVelocity = b2Vec2(0, vel_right.y)
+		self._is_moving = False
 
 	def _stop_right_part(self) -> None:
-		if self._spawn_locked:
+		if self._spawn_locked or self._is_finished:
 			return
 		vel_left = self._left_part.body.linearVelocity
 		vel_right = self._right_part.body.linearVelocity
 		self._left_part.body.linearVelocity = b2Vec2(0, vel_left.y)
 		self._right_part.body.linearVelocity = b2Vec2(0, vel_right.y)
+		self._is_moving = False
 
 	def _jump_part(self, body, jumps_remaining: int) -> int:
-		if self._spawn_locked or jumps_remaining <= 0:
+		if self._spawn_locked or jumps_remaining <= 0 or self._is_finished:
 			return jumps_remaining
-
 		vel = body.linearVelocity
 		body.linearVelocity = b2Vec2(vel.x, 0)
 		body.ApplyLinearImpulse(b2Vec2(0, self._jump_force), body.worldCenter, True)
+
+		if self._sound_manager:
+			self._sound_manager.play_sound('jump')
+
 		return jumps_remaining - 1
 
 	def _update_spawn_lock(self) -> None:
@@ -342,6 +410,49 @@ class Player(pygame.sprite.Sprite):
 					self._spawn_locked = False
 					self._left_jumps = self._max_jumps
 					self._right_jumps = self._max_jumps
+
+	def apply_explosion_force(self) -> None:
+		bag_pos = self._bag.body.position
+		left_pos = self._left_part.body.position
+		right_pos = self._right_part.body.position
+
+		horizontal_velocity = 20
+		vertical_velocity = 15
+
+		direction_x_left = -1 if left_pos.x < bag_pos.x else 1
+		direction_x_right = 1 if right_pos.x > bag_pos.x else -1
+
+		self._left_part.body.awake = True
+		self._right_part.body.awake = True
+
+		self._left_part.body.linearVelocity = b2Vec2(
+			direction_x_left * horizontal_velocity, 
+			vertical_velocity
+		)
+
+		self._right_part.body.linearVelocity = b2Vec2(
+			direction_x_right * horizontal_velocity, 
+			vertical_velocity
+		)
+
+		self._left_part.body.linearDamping = 0.3
+		self._right_part.body.linearDamping = 0.3
+
+		if self._sound_manager and not self._explosion_sound_played:
+			self._sound_manager.play_sound('explosion')
+			self._explosion_sound_played = True
+
+		self._explosion_applied = True
+
+	def force_tear(self) -> None:
+		if not self._bag.is_torn and not self._is_finished:
+			self._bag._is_torn = True
+
+	def set_finished(self) -> None:
+		self._is_finished = True
+		self._left_part.body.linearVelocity = b2Vec2(0, 0)
+		self._right_part.body.linearVelocity = b2Vec2(0, 0)
+		self._bag.body.linearVelocity = b2Vec2(0, 0)
 
 	def move_key(self, key: str, state: bool) -> None:
 		if key == 'left':
@@ -356,7 +467,7 @@ class Player(pygame.sprite.Sprite):
 	def check_bounds(self, screen_width: int, screen_height: int) -> bool:
 		left_pos = self._physics_world.world_to_screen(
 			(
-				self._left_part.body.position.x, 
+				self._left_part.body.position.x,
 				self._left_part.body.position.y
 			)
 		)
@@ -370,14 +481,16 @@ class Player(pygame.sprite.Sprite):
 				self._bag.body.position.x, self._bag.body.position.y
 			)
 		)
-
 		margin = 200
-		return (left_pos[1] > screen_height + margin or 
-				right_pos[1] > screen_height + margin or 
+		return (left_pos[1] > screen_height + margin or
+				right_pos[1] > screen_height + margin or
 				bag_pos[1] > screen_height + margin)
 
 	def is_game_over(self) -> bool:
 		return self._bag.is_torn
+
+	def is_finished(self) -> bool:
+		return self._is_finished
 
 	def get_bag_screen_position(self) -> tuple[float, float]:
 		return self._physics_world.world_to_screen(
@@ -415,17 +528,23 @@ class Player(pygame.sprite.Sprite):
 		)
 		self._left_part.body.linearVelocity = b2Vec2(0, 0)
 		self._left_part.body.angularVelocity = 0
+		self._left_part.body.linearDamping = 0
+		self._left_part._walk_offset_y = 0
+		self._left_part._walk_time = random.uniform(0, math.pi * 2)
 
 		self._right_part.body.position = b2Vec2(
 			*self._physics_world.screen_to_world(
 				(
-					right_x, 
+					right_x,
 					self._initial_position[1]
 				)
 			)
 		)
 		self._right_part.body.linearVelocity = b2Vec2(0, 0)
 		self._right_part.body.angularVelocity = 0
+		self._right_part.body.linearDamping = 0
+		self._right_part._walk_offset_y = 0
+		self._right_part._walk_time = random.uniform(0, math.pi * 2)
 
 		self._bag.body.position = b2Vec2(
 			*self._physics_world.screen_to_world(
@@ -440,7 +559,6 @@ class Player(pygame.sprite.Sprite):
 		self._bag._update_sprite_position()
 
 		self._create_joints()
-
 		self._spawn_locked = True
 		self._spawn_lock_frames = 30
 		self._left_jumps = 0
@@ -448,19 +566,24 @@ class Player(pygame.sprite.Sprite):
 		self._left_on_ground = False
 		self._right_on_ground = False
 		self._bag_tear_animation_done = False
+		self._explosion_applied = False
+		self._is_finished = False
+		self._desync_timer = 0
+		self._explosion_sound_played = False
+		self._is_moving = False
 
-	def update(self) -> None:
+	def update(self, current_time: float) -> None:
 		self._update_spawn_lock()
 
 		if self._bag.is_torn and not self._bag_tear_animation_done:
 			if not hasattr(self._bag, '_is_tearing') or not self._bag._is_tearing:
-				self._bag.start_tear_animation()
 				self._destroy_joints()
-
+				self._bag.start_tear_animation()
+				self.apply_explosion_force()
 			if self._bag.update_tear_animation():
 				self._bag_tear_animation_done = True
 
-		if not self._spawn_locked:
+		if not self._spawn_locked and not self._bag.is_torn and not self._explosion_applied and not self._is_finished:
 			left_on_ground = self._check_ground(self._left_part.body, True)
 			right_on_ground = self._check_ground(self._right_part.body, False)
 
@@ -486,6 +609,8 @@ class Player(pygame.sprite.Sprite):
 
 			if left_wants_move and right_wants_move:
 				self._bag._is_torn = True
+				if self._sound_manager:
+					self._sound_manager.play_sound('rope_stretch') 
 				self._stop_left_part()
 			elif left_wants_move:
 				self._move_left_part()
@@ -502,7 +627,15 @@ class Player(pygame.sprite.Sprite):
 				self._right_jumps = self._jump_part(self._right_part.body, self._right_jumps)
 				self._right_keys['jump'] = False
 
-		self._bag.check_tear(self._left_part.body.position, self._right_part.body.position)
+			if self._check_desync():
+				self._bag._is_torn = True
+
+			self._check_rope_stretch(current_time)
+			self._bag.check_tear(self._left_part.body.position, self._right_part.body.position)
+
+		dt = 1.0 / 60.0
+		self._left_part.update_walk_animation(dt, self._is_moving and self._left_on_ground)
+		self._right_part.update_walk_animation(dt, self._is_moving and self._right_on_ground)
 
 		self._left_part.update()
 		self._right_part.update()
@@ -510,5 +643,5 @@ class Player(pygame.sprite.Sprite):
 
 	def draw(self, surface: pygame.Surface) -> None:
 		surface.blit(self._left_part.image, self._left_part.rect)
-		surface.blit(self._right_part.image, self._right_part.rect)
 		surface.blit(self._bag.image, self._bag.rect)
+		surface.blit(self._right_part.image, self._right_part.rect)

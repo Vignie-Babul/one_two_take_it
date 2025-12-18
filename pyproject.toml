@@ -5,7 +5,11 @@ description = ""
 requires-python = ">=3.12"
 dependencies = [
 	"box2d>=2.3.10",
+	"moderngl>=5.12.0",
+	"numpy>=2.3.5",
 	"pygame>=2.6.1",
+	"pyinstaller>=6.17.0",
+	"pyopengl>=3.1.10",
 ]
 
 
@@ -15,7 +19,7 @@ line-length = 120
 
 [tool.ruff.lint]
 select = ["E", "F", "UP", "B", "SIM", "I"]
-ignore = ["I001"]
+ignore = ["I001", "UP046"]
 
 [tool.ruff.format]
 quote-style = "single"
